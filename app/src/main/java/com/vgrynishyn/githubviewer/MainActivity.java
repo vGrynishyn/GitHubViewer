@@ -1,6 +1,8 @@
 package com.vgrynishyn.githubviewer;
 
 import android.app.Activity;
+import android.content.Context;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -9,6 +11,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import org.json.JSONArray;
@@ -28,8 +32,10 @@ public class MainActivity extends Activity {
     Button button;
     private PersonAdapter mAdapter;
     private RecyclerView mRecyclerView;
-    //private static UserRepository sUserRepository;
     ArrayList<UserRepository> mReposInfo = new ArrayList<>();
+
+
+    Context context = this;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,17 +45,13 @@ public class MainActivity extends Activity {
         mRecyclerView = (RecyclerView)findViewById(R.id.recyclerView);
     }
 
-
     public void clickButton(View view) throws IOException {
         new getGitHubRepositoryContent().execute();
-        mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-        mAdapter = new PersonAdapter(mReposInfo);
-        mRecyclerView.setAdapter(mAdapter);
         }
 
-    private class getGitHubRepositoryContent extends AsyncTask<Object, Object, Void> {
+    private class getGitHubRepositoryContent extends AsyncTask<Object, Object, ArrayList<UserRepository>> implements com.vgrynishyn.githubviewer.getGitHubRepositoryContent {
         @Override
-        protected Void doInBackground(Object... params) {
+        protected ArrayList<UserRepository> doInBackground(Object... params) {
                 BufferedReader reader = null;
                 try {
                     URL url = new URL("https://api.github.com/users/vGrynishyn/repos");
@@ -68,8 +70,8 @@ public class MainActivity extends Activity {
                                  jsonObj.getString("name"),
                                  jsonObj.getString("description"),
                                  jsonObj.getString("language"),
-                                 jsonObj.getInt("stargazers_count"),
-                                 jsonObj.getInt("forks"),
+                                 jsonObj.getString("stargazers_count"),
+                                 jsonObj.getString("forks"),
                                  jsonObj.getString("updated_at")));
                     }
                 } catch (IOException | JSONException e) {
@@ -82,66 +84,83 @@ public class MainActivity extends Activity {
                             e.printStackTrace();
                         }
                 }
-            return null;
+            return mReposInfo;
+        }
+
+        @Override
+        public void onPostExecute(ArrayList<UserRepository> ar) {
+            mRecyclerView.setLayoutManager(new LinearLayoutManager(context));
+            mAdapter = new PersonAdapter(ar);
+            mRecyclerView.setAdapter(mAdapter);
         }
     }
 
     private class ReposHolder extends RecyclerView.ViewHolder{
 
-        private TextView mPersonNameTextView;
-        private TextView mPersonAdressTextView;
-        private TextView mPersonAgeTextView;
+        private TextView mReposNameTV;
+        private TextView mReposDescriptionTV;
+        private TextView mReposLangTV;
+        private TextView mReposStarsTV;
+        private TextView mReposForksTV;
+        private TextView mReposUpdateDateTV;
         private UserRepository mUserRepos;
-
+        protected LinearLayout LinLayout;
 
         public ReposHolder(View itemView) {
             super(itemView);
-            mPersonNameTextView = (TextView) itemView.findViewById(R.id.personNameView);
-            mPersonAdressTextView = (TextView) itemView.findViewById(R.id.personAdressView);
-            mPersonAgeTextView = (TextView) itemView.findViewById(R.id.personAgeView);
+            mReposNameTV = (TextView) itemView.findViewById(R.id.reposNameView);
+            mReposDescriptionTV = (TextView) itemView.findViewById(R.id.reposDescriptionView);
+            mReposLangTV = (TextView) itemView.findViewById(R.id.reposLangView);
+            mReposStarsTV = (TextView) itemView.findViewById(R.id.reposStarsView);
+            mReposForksTV = (TextView) itemView.findViewById(R.id.reposForksView);
+            mReposUpdateDateTV = (TextView) itemView.findViewById(R.id.reposUpdateDateView);
+            LinLayout = (LinearLayout) itemView.findViewById(R.id.LinLayout);
         }
-        //Метод, связывающий ранее добытые в конструкторе ссылки с данными модели
+
         public void bindCrime(UserRepository repos) {
             mUserRepos = repos;
-            mPersonNameTextView.setText("jdsflksjaf");
-            mPersonAdressTextView.setText("sdkfjlsdkfj");
-            mPersonAgeTextView.setText("sdkjflks");
-
-//            mPersonNameTextView.setText(mUserRepos.getName());
-//            mPersonAdressTextView.setText(mUserRepos.getLanguage());
-//            mPersonAgeTextView.setText(mUserRepos.getDescription());
+            mReposNameTV.setText(repos.getName());
+            mReposDescriptionTV.setText(repos.getDescription());
+            mReposLangTV.setText(repos.getLanguage());
+            mReposStarsTV.setText(repos.getStars());
+            mReposForksTV.setText(repos.getForks());
+            mReposUpdateDateTV.setText(repos.getUpdateDate());
         }
-
     }
     private class PersonAdapter extends RecyclerView.Adapter<ReposHolder> {
 
-        private List<UserRepository> mPersons;
+        private List<UserRepository> mRepos;
         public PersonAdapter(List<UserRepository> persons) {
-            mPersons = persons;
+            mRepos = persons;
         }
 
-        //Создаёт пустую вьюшку,оборачивает её в ReposHolder.
-        //Дальше забота по наполнению этой вьюшки ложиться именно на объект ReposHolder'а
         @Override
-        public ReposHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        public ReposHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
             LayoutInflater li = getLayoutInflater();
-            View view = li.inflate(R.layout.list_item_user, parent, false);
+            View view = li.inflate(R.layout.list_item_user, viewGroup, false);
+
+            ReposHolder holder = new ReposHolder(view);
+            holder.LinLayout.setOnClickListener(new View.OnClickListener(){
+                @Override
+                public void onClick(View v) {
+                    Intent intent = new Intent(getApplicationContext(), ReposInfoActivity.class);
+                    String ur = "GoogleSearchTest";
+                    intent.putExtra("reposInfo", ur);
+                    startActivity(intent);
+                }
+            });
             return new ReposHolder(view);
         }
 
-        //Дёргает метод холдера при выводе нового элемента списка на экран,
-        //передавая ему актуальный объект модели для разбора и представления
         @Override
         public void onBindViewHolder(ReposHolder holder, int position) {
-            UserRepository person = mPersons.get(position);
+            UserRepository person = mRepos.get(position);
             holder.bindCrime(person);
+       }
 
-        }
-
-        //Возвращает размер хранилища моделей
         @Override
         public int getItemCount() {
-            return mPersons.size();
+            return mRepos.size();
         }
     }
 }

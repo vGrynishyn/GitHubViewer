@@ -1,34 +1,30 @@
 package com.vgrynishyn.githubviewer;
 
+import java.io.Serializable;
+
 /**
  * Created by VGrynishyn on 11/3/2017.
  */
 
-public class UserRepository {
+public class UserRepository implements Serializable {
 
-
-    //public class ReposInfo {
         private String name;
         private String description;
         private String language;
-        private int stars;
-        private int forks;
+        private String stars;
+        private String forks;
         private String updateDate;
 
-//        public ReposInfo() {
-//        }
+       public UserRepository() {}
 
-       public UserRepository() {
-      }
-
-        public UserRepository(String name, String description, String language, int stars, int forks, String updateDate) {
+       public UserRepository(String name, String description, String language, String stars, String forks, String updateDate) {
             this.name = name;
             this.description = description;
             this.language = language;
             this.stars = stars;
             this.forks = forks;
             this.updateDate = updateDate;
-        }
+       }
 
         public String getName() {
             return name;
@@ -54,19 +50,19 @@ public class UserRepository {
             this.language = language;
         }
 
-        public int getStars() {
+        public String getStars() {
             return stars;
         }
 
-        public void setStars(int stars) {
+        public void setStars(String stars) {
             this.stars = stars;
         }
 
-        public int getForks() {
+        public String getForks() {
             return forks;
         }
 
-        public void setForks(int forks) {
+        public void setForks(String forks) {
             this.forks = forks;
         }
 
