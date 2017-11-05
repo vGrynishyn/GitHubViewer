@@ -12,7 +12,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import org.json.JSONArray;
@@ -33,9 +32,8 @@ public class MainActivity extends Activity {
     private PersonAdapter mAdapter;
     private RecyclerView mRecyclerView;
     ArrayList<UserRepository> mReposInfo = new ArrayList<>();
-
-
     Context context = this;
+    UserRepository ur;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,10 +41,11 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
         button = (Button) findViewById(R.id.button);
         mRecyclerView = (RecyclerView)findViewById(R.id.recyclerView);
+        new getGitHubRepositoryContent().execute();
     }
 
     public void clickButton(View view) throws IOException {
-        new getGitHubRepositoryContent().execute();
+        //new getGitHubRepositoryContent().execute();
         }
 
     private class getGitHubRepositoryContent extends AsyncTask<Object, Object, ArrayList<UserRepository>> implements com.vgrynishyn.githubviewer.getGitHubRepositoryContent {
@@ -54,7 +53,7 @@ public class MainActivity extends Activity {
         protected ArrayList<UserRepository> doInBackground(Object... params) {
                 BufferedReader reader = null;
                 try {
-                    URL url = new URL("https://api.github.com/users/vGrynishyn/repos");
+                    URL url = new URL("https://api.github.com/users/JakeWharton/repos");
                     reader = new BufferedReader(new InputStreamReader(url.openStream()));
                     StringBuffer buffer = new StringBuffer();
                     int read;
@@ -72,7 +71,9 @@ public class MainActivity extends Activity {
                                  jsonObj.getString("language"),
                                  jsonObj.getString("stargazers_count"),
                                  jsonObj.getString("forks"),
-                                 jsonObj.getString("updated_at")));
+                                 jsonObj.getString("updated_at"),
+                                 jsonObj.getString("open_issues"),
+                                 jsonObj.getString("watchers")));
                     }
                 } catch (IOException | JSONException e) {
                     e.printStackTrace();
@@ -95,6 +96,11 @@ public class MainActivity extends Activity {
         }
     }
 
+    public interface RecyclerViewClickListener
+    {
+        public void recyclerViewListClicked(View v, int position);
+    }
+
     private class ReposHolder extends RecyclerView.ViewHolder{
 
         private TextView mReposNameTV;
@@ -103,7 +109,7 @@ public class MainActivity extends Activity {
         private TextView mReposStarsTV;
         private TextView mReposForksTV;
         private TextView mReposUpdateDateTV;
-        private UserRepository mUserRepos;
+       // private UserRepository mUserRepos;
         protected LinearLayout LinLayout;
 
         public ReposHolder(View itemView) {
@@ -118,9 +124,10 @@ public class MainActivity extends Activity {
         }
 
         public void bindCrime(UserRepository repos) {
-            mUserRepos = repos;
+            //mUserRepos = repos;
             mReposNameTV.setText(repos.getName());
-            mReposDescriptionTV.setText(repos.getDescription());
+            if (repos.getDescription() != null)
+                mReposDescriptionTV.setText(repos.getDescription());
             mReposLangTV.setText(repos.getLanguage());
             mReposStarsTV.setText(repos.getStars());
             mReposForksTV.setText(repos.getForks());
@@ -143,8 +150,9 @@ public class MainActivity extends Activity {
             holder.LinLayout.setOnClickListener(new View.OnClickListener(){
                 @Override
                 public void onClick(View v) {
+                    int itemPosition = mRecyclerView.indexOfChild(v);
                     Intent intent = new Intent(getApplicationContext(), ReposInfoActivity.class);
-                    String ur = "GoogleSearchTest";
+                    UserRepository ur = mReposInfo.get(itemPosition);
                     intent.putExtra("reposInfo", ur);
                     startActivity(intent);
                 }
