@@ -28,7 +28,6 @@ import java.util.List;
 
 public class MainActivity extends Activity {
 
-    Button button;
     private PersonAdapter mAdapter;
     private RecyclerView mRecyclerView;
     ArrayList<UserRepository> mReposInfo = new ArrayList<>();
@@ -39,14 +38,9 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        button = (Button) findViewById(R.id.button);
         mRecyclerView = (RecyclerView)findViewById(R.id.recyclerView);
         new getGitHubRepositoryContent().execute();
     }
-
-    public void clickButton(View view) throws IOException {
-        //new getGitHubRepositoryContent().execute();
-        }
 
     private class getGitHubRepositoryContent extends AsyncTask<Object, Object, ArrayList<UserRepository>> implements com.vgrynishyn.githubviewer.getGitHubRepositoryContent {
         @Override
@@ -94,11 +88,6 @@ public class MainActivity extends Activity {
             mAdapter = new PersonAdapter(ar);
             mRecyclerView.setAdapter(mAdapter);
         }
-    }
-
-    public interface RecyclerViewClickListener
-    {
-        public void recyclerViewListClicked(View v, int position);
     }
 
     private class ReposHolder extends RecyclerView.ViewHolder{
@@ -150,7 +139,7 @@ public class MainActivity extends Activity {
             holder.LinLayout.setOnClickListener(new View.OnClickListener(){
                 @Override
                 public void onClick(View v) {
-                    int itemPosition = mRecyclerView.indexOfChild(v);
+                    int itemPosition = mRecyclerView.indexOfChild(v); //TODO: check getting position
                     Intent intent = new Intent(getApplicationContext(), ReposInfoActivity.class);
                     UserRepository ur = mReposInfo.get(itemPosition);
                     intent.putExtra("reposInfo", ur);
