@@ -3,6 +3,8 @@ package com.vgrynishyn.githubviewer;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -10,9 +12,9 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -38,9 +40,22 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        mRecyclerView = (RecyclerView)findViewById(R.id.recyclerView);
-        new getGitHubRepositoryContent().execute();
-    }
+        mRecyclerView = (RecyclerView) findViewById(R.id.recyclerView);
+        if (isOnline(context)) {
+            new getGitHubRepositoryContent().execute();
+        } else {
+            Toast.makeText(context, "Connection internet is failed.", Toast.LENGTH_SHORT).show();
+        }
+
+}
+    public static boolean isOnline(Context context) {
+        ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo netInfo = cm.getActiveNetworkInfo();
+        if (netInfo != null && netInfo.isConnectedOrConnecting()) {
+            return true;
+        }
+        return false;
+    };
 
     private class getGitHubRepositoryContent extends AsyncTask<Object, Object, ArrayList<UserRepository>> implements com.vgrynishyn.githubviewer.getGitHubRepositoryContent {
         @Override
@@ -98,7 +113,6 @@ public class MainActivity extends Activity {
         private TextView mReposStarsTV;
         private TextView mReposForksTV;
         private TextView mReposUpdateDateTV;
-       // private UserRepository mUserRepos;
         protected LinearLayout LinLayout;
 
         public ReposHolder(View itemView) {
@@ -113,10 +127,8 @@ public class MainActivity extends Activity {
         }
 
         public void bindCrime(UserRepository repos) {
-            //mUserRepos = repos;
             mReposNameTV.setText(repos.getName());
-            if (repos.getDescription() != null)
-                mReposDescriptionTV.setText(repos.getDescription());
+            mReposDescriptionTV.setText(repos.getDescription());
             mReposLangTV.setText(repos.getLanguage());
             mReposStarsTV.setText(repos.getStars());
             mReposForksTV.setText(repos.getForks());
