@@ -151,7 +151,7 @@ public class MainActivity extends Activity {
             holder.LinLayout.setOnClickListener(new View.OnClickListener(){
                 @Override
                 public void onClick(View v) {
-                    int itemPosition = mRecyclerView.indexOfChild(v); //TODO: check getting position
+                    int itemPosition = mRecyclerView.indexOfChild(v);
                     Intent intent = new Intent(getApplicationContext(), ReposInfoActivity.class);
                     UserRepository ur = mReposInfo.get(itemPosition);
                     intent.putExtra("reposInfo", ur);
